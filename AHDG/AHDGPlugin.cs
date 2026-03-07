@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using Silksong.AssetHelper.Internal;
 using Silksong.ModMenu.Elements;
 using Silksong.ModMenu.Plugin;
+using System.Diagnostics;
 using System.IO;
 
 namespace AHDG;
@@ -20,10 +21,14 @@ public partial class AHDGPlugin : BaseUnityPlugin, IModMenuCustomElement
         {
             TransferredData data = TransferredData.Create();
 
+            string folder = Path.GetDirectoryName(GetType().Assembly.Location);
+
             data.SerializeToFile(Path.Combine(
-                Path.GetDirectoryName(GetType().Assembly.Location),
+                folder,
                 "data.json"
                 ));
+
+            Process.Start(folder);
         };
 
         return button;
