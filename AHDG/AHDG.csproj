@@ -1,0 +1,146 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 
+  Imports silksong path properties only if present in order to allow CI builds. The file should be gitignored.
+  If you are checking out from git and need to create a new one, you can use `dotnet new silksongpath` to generate one.
+  -->
+  <Import Condition="Exists('../SilksongPath.props')" Project="../SilksongPath.props" />
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisMode>recommended</AnalysisMode>
+    <!-- Ignore warning about processor architecture mismatch with PlayMaker ConditionalExpression -->
+    <NoWarn>$(NoWarn);MSB3270</NoWarn>
+
+    <!-- Shortens and anonymizes paths in debug symbols relative to the project directory. Breakpoints will not work, however. -->
+    <PathMap Condition="'$(Configuration)' == 'Release'">$(MSBuildProjectDirectory)=/</PathMap>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageId>Silksong.AHDG</PackageId>
+    <RepositoryUrl>https://github.com/flibber-hk/Silksong.AHDG</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ManagedFolder Condition="$(SilksongFolder) != ''">$(SilksongFolder)/Hollow Knight Silksong_Data/Managed</ManagedFolder>
+    <UseLocalRefs Condition="'$(Configuration)' == 'Debug' And Exists('$(ManagedFolder)')">true</UseLocalRefs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+    <PackageReference Include="HarmonyX" Version="2.9.0" />
+    <PackageReference Include="Harmonize" Version="1.0.6" PrivateAssets="all" />
+    <PackageReference Include="Hamunii.BepInEx.AutoPlugin" Version="2.0.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0" PrivateAssets="all" />
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="UnityEngine.Modules" Version="6000.0.50" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silksong.AssetHelper" Version="1.2.2">
+      <Publicize>true</Publicize>
+    </PackageReference>
+    <PackageReference Include="Silksong.ModMenu" Version="0.4.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalRefs)' == 'true'">
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
+
+    <SystemFiles Include="$(ManagedFolder)/System*.dll" />
+    <SystemFiles Include="$(ManagedFolder)/netstandard.dll" />
+    <SystemFiles Include="$(ManagedFolder)/mscorlib.dll" />
+    <SystemFiles Include="$(ManagedFolder)/UnityEngine*.dll" Exclude="$(ManagedFolder)/UnityEngine.AMDModule.dll;$(ManagedFolder)/UnityEngine.ARModule.dll;$(ManagedFolder)/UnityEngine.NVIDIAModule.dll;$(ManagedFolder)/UnityEngine.UI.dll" />
+
+    <GameFiles Include="$(ManagedFolder)/*Assembly-CSharp.dll" />
+    <GameFiles Include="$(ManagedFolder)/*PlayMaker.dll" />
+    <GameFiles Include="$(ManagedFolder)/TeamCherry.*.dll" />
+
+    <AllFiles Include="$(ManagedFolder)/*.dll" />
+
+    <StandardRefFiles Include="@(AllFiles)" Exclude="@(SystemFiles);@(GameFiles)" />
+
+    <Reference Include="@(StandardRefFiles)">
+      <HintPath>%(Identity)</HintPath>
+    </Reference>
+
+    <Reference Include="@(GameFiles)">
+      <HintPath>%(Identity)</HintPath>
+      <Publicize>true</Publicize>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalRefs)' != 'true'">
+    <PackageReference Include="Silksong.GameLibs" Version="*-*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <Reference Include="FilteredLogs" Condition="Exists('$(SilksongPluginsFolder)\flibber-FilteredLogs\FilteredLogs.dll')">
+      <HintPath>$(SilksongPluginsFolder)\flibber-FilteredLogs\FilteredLogs.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_Assembly-CSharp" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_Assembly-CSharp.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_PlayMaker" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_PlayMaker.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_PlayMaker.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.BuildBot" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.BuildBot.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.BuildBot.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.Cinematics" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.Cinematics.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.Cinematics.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.Localization" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.Localization.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.NestedFadeGroup" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.NestedFadeGroup.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.NestedFadeGroup.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.SharedUtils" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.SharedUtils.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.SharedUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.Splines" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.Splines.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.Splines.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_TeamCherry.TK2D" Condition="Exists('$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.TK2D.dll')">
+      <HintPath>$(SilksongPluginsFolder)\MMHOOK\Managed\MMHOOK_TeamCherry.TK2D.dll</HintPath>
+    </Reference>
+    <Reference Include="Silksong.GameObjectDump" Condition="Exists('$(SilksongPluginsFolder)\syyePhenomenol-GameObjectDump\Silksong.GameObjectDump.dll')">
+      <HintPath>$(SilksongPluginsFolder)\syyePhenomenol-GameObjectDump\Silksong.GameObjectDump.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="True" PackagePath="README.md" />
+    <None Include="../thunderstore/icon.png" Pack="True" PackagePath="icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="UnityEngine.Object" Alias="UObject" />
+    <Using Include="UnityEngine.SceneManagement.SceneManager" Alias="USceneManager" />
+  </ItemGroup>
+
+  <Target Name="CopyAndPackageMod" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <Binaries Include="$(TargetPath)" LocalDir="/" PackDir="/" />
+      <Binaries Include="$(TargetDir)/$(TargetName).pdb" LocalDir="/" PackDir="/" />
+    </ItemGroup>
+    <PropertyGroup>
+      <ThunderstoreDir>$(ProjectDir)/../thunderstore</ThunderstoreDir>
+    </PropertyGroup>
+
+    <!-- Local install -->
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SilksongPluginsFolder)/flibber-$(AssemblyTitle)/%(Binaries.LocalDir)" Condition="'$(SilksongPluginsFolder)' != '' And Exists('$(SilksongPluginsFolder)')" />
+
+    <!-- Thunderstore packaging -->
+    <RemoveDir Directories="$(ThunderstoreDir)/temp;$(ThunderstoreDir)/dist" />
+    <MakeDir Directories="$(ThunderstoreDir)/temp" />
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(ThunderstoreDir)/temp/%(Binaries.PackDir)" />
+    <Exec Command="dotnet tool restore" />
+    <Exec Command="dotnet tcli build --config-path &quot;$(ThunderstoreDir)/thunderstore.toml&quot; --package-name &quot;$(AssemblyTitle)&quot; --package-version $(Version)" StandardOutputImportance="High" StandardErrorImportance="High" />
+  </Target>
+</Project>
