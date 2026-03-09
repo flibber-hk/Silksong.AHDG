@@ -46,7 +46,7 @@
     <PackageReference Include="Silksong.AssetHelper" Version="1.2.2">
       <Publicize>true</Publicize>
     </PackageReference>
-    <PackageReference Include="Silksong.ModMenu" Version="0.4.3" />
+    <PackageReference Include="Silksong.ModMenu" Version="0.4.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseLocalRefs)' == 'true'">
